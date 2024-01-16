@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Joy's Cafe Search</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+
+    input[type="text"] {
+      padding: 5px;
+      width: 200px;
+    }
+</style>
+</head>
+<body>
+  <h1>Joy's Cafe Search</h1>
+
+  <input type="text" id="searchInput" placeholder="Search Cafe">
+  <button id="searchButton">Search</button>
+  <button id="clearButton">Clear</button>
+
+  <table id="cafeTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>City</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody id="cafeList"></tbody>
+  </table>
+
+  <script>
+    const cafesEndpoint = "https://raw.githubusercontent.com/debojyoti/places-fake-rest-api/master/cafes.json";
+    const placesEndpoint = "https://raw.githubusercontent.com/debojyoti/places-fake-rest-api/master/places.json";
+
+    const searchInput = document.getElementById("searchInput");
+    const searchButton = document.getElementById("searchButton");
+    const clearButton = document.getElementById("clearButton");
+    const cafeListContainer = document.getElementById("cafeList");
+
+    searchButton.addEventListener("click", handleSearch);
+    clearButton.addEventListener("click", handleClear);
+    searchInput.addEventListener("input", handleSearch);
+
+    async function fetchCafes() {
+      try {
+        const response = await fetch(cafesEndpoint);
+        const cafes = await response.json();
+        return cafes;
+      } catch (error) {
+        console.error("Error fetching cafes:", error);
+        return [];
+      }
+    }
+
+    async function fetchPlaces() {
+      try {
+        const response = await fetch(placesEndpoint);
+        const places = await response.json();
+        return places;
+      } catch (error) {
+        console.error("Error fetching places:", error);
+        return [];
+      }
+    }
+
+    function filterCafes(cafes, searchTerm) {
+      return cafes.filter(cafe => cafe.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    function displayCafes(cafes) {
+      cafeListContainer.innerHTML = "";
+
+      cafes.forEach(cafe => {
+        const row = document.createElement("tr");
+        const nameCell = document.createElement("td");
+        const cityCell = document.createElement("td");
+        const ratingCell = document.createElement("td");
+
+        nameCell.textContent = cafe.name;
+        cityCell.textContent = cafe.city;
+        ratingCell.textContent = cafe.rating;
+
+        row.appendChild(nameCell);
+        row.appendChild(cityCell);
+        row.appendChild(ratingCell);
+
+        cafeListContainer.appendChild(row);
+      });
+    }
+
+    async function handleSearch() {
+      const searchTerm = searchInput.value.trim();
+      const cafes = await fetchCafes();
+      const filteredCafes = filterCafes(cafes, searchTerm);
+      displayCafes(filteredCafes);
+    }
+
+    function handleClear() {
+      searchInput.value = "";
+      handleSearch();
+    }
+
+   
+    (async function() {
+      const cafes = await fetchCafes();
+      displayCafes(cafes);
+    })();
+  </script>
+</body>
+</html>
